@@ -1,30 +1,91 @@
-# Admin Dashboard - B2B SaaS Platform
+# Admin Dashboard
 
-A powerful, modern admin dashboard built for B2B SaaS monitoring and management. This dashboard provides comprehensive analytics, user management, system monitoring, and configuration capabilities.
+A comprehensive, full-stack admin dashboard built with Next.js 15, Clerk authentication, and PostgreSQL. This dashboard provides complete functionality for user management, analytics, content management, system monitoring, and more.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Authentication & Authorization** - Secure login with Clerk
-- **Real-time Analytics** - Comprehensive metrics and charts
-- **User Management** - Complete CRUD operations for users and organizations
-- **System Monitoring** - Real-time logs, performance metrics, and error tracking
-- **Settings & Configuration** - Flexible platform configuration
+- **User Management**: Complete CRUD operations for users with role-based access control
+- **Analytics Dashboard**: Real-time metrics, charts, and performance data
+- **Content Management**: Posts, pages, media, and comments management
+- **System Monitoring**: Real-time system health, logs, and performance metrics
+- **Notifications**: Real-time notification system with multiple channels
+- **Settings**: Comprehensive settings management for all aspects of the system
 
-### Technical Stack
-- **Frontend**: Next.js 14, React 18, Tailwind CSS
-- **UI Components**: shadcn/ui with Radix UI primitives
+### Technical Features
+- **Authentication**: Secure authentication with Clerk
+- **Database**: PostgreSQL with Drizzle ORM
+- **Real-time Data**: Live updates and real-time metrics
+- **Responsive Design**: Mobile-first, responsive design
+- **Dark Mode**: Full dark mode support
+- **API Routes**: RESTful API with comprehensive endpoints
+- **Type Safety**: Full TypeScript support
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15, React, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Clerk
-- **Database**: Neon PostgreSQL with Drizzle ORM
 - **Charts**: Recharts
+- **UI Components**: Custom components with Radix UI
 - **Icons**: Lucide React
 
-## 🛠️ Getting Started
+## 📁 Project Structure
+
+```
+src/
+├── app/
+│   ├── api/                    # API routes
+│   │   ├── users/             # User management API
+│   │   ├── posts/             # Content management API
+│   │   ├── analytics/         # Analytics API
+│   │   ├── notifications/     # Notifications API
+│   │   └── dashboard/         # Dashboard data API
+│   ├── dashboard/             # Dashboard pages
+│   │   ├── users/            # User management page
+│   │   ├── content/          # Content management page
+│   │   ├── monitoring/       # System monitoring page
+│   │   └── settings/         # Settings page
+│   └── sign-in/              # Authentication pages
+├── components/
+│   ├── dashboard/            # Dashboard components
+│   │   ├── header.jsx        # Top navigation
+│   │   └── sidebar.jsx       # Side navigation
+│   └── ui/                   # Reusable UI components
+└── lib/
+    ├── db/                   # Database configuration
+    │   ├── index.js          # Database connection
+    │   └── schema.js         # Database schema
+    └── utils.js              # Utility functions
+```
+
+## 🗄️ Database Schema
+
+The dashboard includes a comprehensive database schema with the following tables:
+
+- **users**: User accounts and profiles
+- **organizations**: Organization management
+- **organizationMembers**: User-organization relationships
+- **posts**: Blog posts and articles
+- **pages**: Static pages
+- **media**: File uploads and media management
+- **comments**: Comments on posts and pages
+- **analyticsEvents**: User activity tracking
+- **systemLogs**: System event logging
+- **performanceMetrics**: Performance monitoring data
+- **notifications**: User notifications
+- **subscriptions**: Billing and subscription management
+- **invoices**: Billing invoices
+- **activities**: Activity feed
+- **settings**: System configuration
+
+## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+ 
-- npm or yarn
-- Neon PostgreSQL database
+- PostgreSQL database
 - Clerk account for authentication
 
 ### Installation
@@ -40,37 +101,24 @@ A powerful, modern admin dashboard built for B2B SaaS monitoring and management.
    npm install
    ```
 
-3. **Environment Setup**
-   Create a `.env.local` file in the root directory:
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Fill in your environment variables:
    ```env
-   # Clerk Authentication
+   DATABASE_URL=postgresql://username:password@localhost:5432/database_name
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    CLERK_SECRET_KEY=your_clerk_secret_key
-   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-
-   # Neon PostgreSQL Database
-   DATABASE_URL=your_neon_database_url
-
-   # App Configuration
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
    ```
 
-4. **Database Setup**
+4. **Set up the database**
    ```bash
-   # Generate database migrations
-   npm run db:generate
-   
-   # Run migrations
-   npm run db:migrate
-   
-   # Open Drizzle Studio (optional)
-   npm run db:studio
+   npm run db:push
    ```
 
-5. **Start Development Server**
+5. **Run the development server**
    ```bash
    npm run dev
    ```
@@ -78,125 +126,166 @@ A powerful, modern admin dashboard built for B2B SaaS monitoring and management.
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📊 Dashboard Features
+## 📊 Dashboard Pages
 
-### Analytics Dashboard
-- Revenue tracking and trends
-- User activity metrics
-- Page view analytics
-- Real-time visitor monitoring
-- Device and browser statistics
-
-### User Management
-- User listing with search and filters
-- Role-based access control
-- User profile management
-- Organization management
-- Invitation system
-
-### System Monitoring
-- Real-time system logs
-- Performance metrics (CPU, Memory, Disk)
-- Error tracking and alerting
+### 1. Analytics Dashboard (`/dashboard`)
+- Real-time metrics and KPIs
+- Revenue analytics with interactive charts
+- User distribution and growth metrics
 - System health monitoring
-- Log filtering and search
+- Recent activity feed
 
-### Settings & Configuration
-- General platform settings
-- Security configuration
+### 2. User Management (`/dashboard/users`)
+- User listing with search and filters
+- User creation, editing, and deletion
+- Role management (Admin, Manager, User)
+- User activity tracking
+- Bulk operations
+
+### 3. Content Management (`/dashboard/content`)
+- Posts management (CRUD operations)
+- Pages management
+- Media library
+- Comments moderation
+- Content analytics
+
+### 4. System Monitoring (`/dashboard/monitoring`)
+- Real-time system health metrics
+- Performance monitoring
+- System logs and alerts
+- Resource utilization
+- Network status
+
+### 5. Settings (`/dashboard/settings`)
+- General application settings
+- User profile management
+- Security settings (2FA, API keys)
 - Notification preferences
-- API settings
-- Database monitoring
+- Billing and subscription management
 
-## 🗄️ Database Schema
+## 🔌 API Endpoints
 
-The application uses a comprehensive database schema with the following main tables:
+### Users API
+- `GET /api/users` - List users with pagination and filters
+- `POST /api/users` - Create new user
+- `GET /api/users/[id]` - Get user details
+- `PUT /api/users/[id]` - Update user
+- `DELETE /api/users/[id]` - Delete user
 
-- **users** - User accounts and profiles
-- **organizations** - Organization/company data
-- **organization_members** - User-organization relationships
-- **analytics_events** - User activity tracking
-- **system_logs** - Application and system logs
-- **performance_metrics** - System performance data
-- **api_keys** - API authentication keys
-- **notifications** - User notifications
-- **settings** - Platform configuration
+### Content API
+- `GET /api/posts` - List posts with pagination
+- `POST /api/posts` - Create new post
+- `GET /api/posts/[id]` - Get post details
+- `PUT /api/posts/[id]` - Update post
+- `DELETE /api/posts/[id]` - Delete post
 
-## 🔧 Available Scripts
+### Analytics API
+- `GET /api/analytics` - Get analytics data
+- `POST /api/analytics` - Track analytics event
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run db:generate` - Generate database migrations
-- `npm run db:migrate` - Run database migrations
-- `npm run db:studio` - Open Drizzle Studio
+### Notifications API
+- `GET /api/notifications` - Get user notifications
+- `POST /api/notifications` - Create notification
+- `PUT /api/notifications` - Mark notifications as read
 
-## 🎨 UI Components
+### Dashboard API
+- `GET /api/dashboard` - Get dashboard overview data
 
-The dashboard uses shadcn/ui components built on Radix UI primitives:
+## 🎨 Customization
 
-- **Layout**: Sidebar, Header, Cards
-- **Forms**: Input, Select, Switch, Textarea
-- **Data Display**: Tables, Charts, Badges
-- **Navigation**: Dropdown menus, Tabs
-- **Feedback**: Alerts, Notifications
+### Themes
+The dashboard supports light and dark themes with system preference detection.
 
-## 🔐 Security Features
+### Styling
+Built with Tailwind CSS for easy customization. All components use CSS variables for consistent theming.
 
-- **Authentication**: Secure login with Clerk
+### Components
+Modular component architecture allows for easy customization and extension.
+
+## 🔒 Security
+
+- **Authentication**: Secure authentication with Clerk
 - **Authorization**: Role-based access control
-- **Data Protection**: Encrypted sensitive data
-- **API Security**: Rate limiting and CORS
-- **Session Management**: Configurable timeouts
+- **API Security**: Protected API routes with authentication
+- **Data Validation**: Input validation and sanitization
+- **SQL Injection**: Protected with Drizzle ORM
 
-## 📱 Responsive Design
+## 📈 Performance
 
-The dashboard is fully responsive and works seamlessly across:
-- Desktop computers
-- Tablets
-- Mobile devices
+- **Server-Side Rendering**: Fast initial page loads
+- **Client-Side Navigation**: Smooth page transitions
+- **Optimized Images**: Next.js image optimization
+- **Code Splitting**: Automatic code splitting for optimal loading
+- **Caching**: Strategic caching for improved performance
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
 
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
 1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
+2. Set environment variables in Vercel dashboard
 3. Deploy automatically on push to main branch
 
 ### Other Platforms
-The application can be deployed to any platform that supports Next.js:
+The dashboard can be deployed to any platform that supports Next.js:
 - Netlify
 - Railway
 - DigitalOcean App Platform
 - AWS Amplify
 
+## 📝 Environment Variables
+
+```env
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Optional: Analytics
+NEXT_PUBLIC_ANALYTICS_ID=your_analytics_id
+
+# Optional: Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+```
+
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-For support and questions:
-- Create an issue in the repository
-- Check the documentation
-- Contact the development team
+For support, email support@example.com or join our Slack channel.
 
-## 🔄 Updates
+## 🙏 Acknowledgments
 
-Stay updated with the latest features and improvements by:
-- Watching the repository
-- Following release notes
-- Checking the changelog
-
----
-
-Built with ❤️ for modern B2B SaaS platforms
+- [Next.js](https://nextjs.org/) for the amazing React framework
+- [Clerk](https://clerk.com/) for authentication
+- [Drizzle](https://orm.drizzle.team/) for database management
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Radix UI](https://www.radix-ui.com/) for accessible components
+- [Lucide](https://lucide.dev/) for beautiful icons

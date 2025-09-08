@@ -3,261 +3,366 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { 
-  Zap, 
-  Search, 
-  Filter, 
-  MoreHorizontal,
+  Monitor, 
+  Server, 
+  Database, 
+  Activity,
   AlertTriangle,
   CheckCircle,
-  XCircle,
-  Info,
   Clock,
-  Activity,
-  Server,
-  Database,
-  Globe,
-  Shield
+  Zap,
+  HardDrive,
+  Cpu,
+  MemoryStick,
+  Wifi,
+  Shield,
+  RefreshCw,
+  Download,
+  Settings,
+  Eye,
+  Trash2
 } from "lucide-react"
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart,
-  Area,
-  BarChart,
-  Bar
-} from "recharts"
-import { useState } from "react"
-
-const systemLogs = [
-  {
-    id: 1,
-    timestamp: "2024-03-25 14:30:15",
-    level: "error",
-    message: "Database connection timeout",
-    context: { userId: "123", action: "user_login" },
-    source: "database"
-  },
-  {
-    id: 2,
-    timestamp: "2024-03-25 14:28:42",
-    level: "warn",
-    message: "High memory usage detected",
-    context: { memory: "85%", threshold: "80%" },
-    source: "system"
-  },
-  {
-    id: 3,
-    timestamp: "2024-03-25 14:25:18",
-    level: "info",
-    message: "User authentication successful",
-    context: { userId: "456", email: "user@example.com" },
-    source: "auth"
-  },
-  {
-    id: 4,
-    timestamp: "2024-03-25 14:22:33",
-    level: "error",
-    message: "API rate limit exceeded",
-    context: { endpoint: "/api/users", limit: "100/min" },
-    source: "api"
-  },
-  {
-    id: 5,
-    timestamp: "2024-03-25 14:20:07",
-    level: "info",
-    message: "Scheduled backup completed",
-    context: { size: "2.3GB", duration: "5m 23s" },
-    source: "backup"
-  },
-]
-
-const performanceMetrics = [
-  { time: '14:00', cpu: 45, memory: 67, disk: 82, network: 23 },
-  { time: '14:05', cpu: 52, memory: 71, disk: 83, network: 28 },
-  { time: '14:10', cpu: 48, memory: 69, disk: 84, network: 25 },
-  { time: '14:15', cpu: 61, memory: 75, disk: 85, network: 31 },
-  { time: '14:20', cpu: 55, memory: 72, disk: 86, network: 27 },
-  { time: '14:25', cpu: 58, memory: 74, disk: 87, network: 29 },
-  { time: '14:30', cpu: 63, memory: 78, disk: 88, network: 33 },
-]
-
-const errorStats = [
-  { type: 'Database Errors', count: 12, trend: '+2' },
-  { type: 'API Errors', count: 8, trend: '-1' },
-  { type: 'Authentication Errors', count: 3, trend: '0' },
-  { type: 'Network Errors', count: 5, trend: '+1' },
-]
-
-const getLevelColor = (level) => {
-  switch (level) {
-    case 'error':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-    case 'warn':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-    case 'info':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-    case 'debug':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
-  }
-}
-
-const getLevelIcon = (level) => {
-  switch (level) {
-    case 'error':
-      return <XCircle className="h-4 w-4 text-red-500" />
-    case 'warn':
-      return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-    case 'info':
-      return <Info className="h-4 w-4 text-blue-500" />
-    case 'debug':
-      return <Activity className="h-4 w-4 text-gray-500" />
-    default:
-      return <Activity className="h-4 w-4 text-gray-500" />
-  }
-}
+import { useEffect, useState } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 
 export default function MonitoringPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterLevel, setFilterLevel] = useState("all")
-  const [filterSource, setFilterSource] = useState("all")
+  const [systemHealth, setSystemHealth] = useState(null);
+  const [performanceData, setPerformanceData] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredLogs = systemLogs.filter(log => {
-    const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         log.context && JSON.stringify(log.context).toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesLevel = filterLevel === "all" || log.level === filterLevel
-    const matchesSource = filterSource === "all" || log.source === filterSource
-    
-    return matchesSearch && matchesLevel && matchesSource
-  })
+  const fetchMonitoringData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/dashboard');
+      const data = await response.json();
+      
+      setSystemHealth(data.systemHealth);
+      setPerformanceData(data.performanceData || []);
+      
+      // Mock logs data
+      setLogs([
+        {
+          id: 1,
+          level: 'info',
+          message: 'User authentication successful',
+          timestamp: new Date(Date.now() - 1000 * 60 * 5),
+          source: 'auth-service'
+        },
+        {
+          id: 2,
+          level: 'warn',
+          message: 'High memory usage detected',
+          timestamp: new Date(Date.now() - 1000 * 60 * 10),
+          source: 'monitoring'
+        },
+        {
+          id: 3,
+          level: 'error',
+          message: 'Database connection timeout',
+          timestamp: new Date(Date.now() - 1000 * 60 * 15),
+          source: 'database'
+        },
+        {
+          id: 4,
+          level: 'info',
+          message: 'Scheduled backup completed',
+          timestamp: new Date(Date.now() - 1000 * 60 * 30),
+          source: 'backup-service'
+        },
+        {
+          id: 5,
+          level: 'info',
+          message: 'API rate limit reset',
+          timestamp: new Date(Date.now() - 1000 * 60 * 45),
+          source: 'api-gateway'
+        }
+      ]);
+    } catch (error) {
+      console.error('Error fetching monitoring data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMonitoringData();
+    const interval = setInterval(fetchMonitoringData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const getLogLevelColor = (level) => {
+    switch (level) {
+      case 'error': return 'text-red-600 dark:text-red-400';
+      case 'warn': return 'text-yellow-600 dark:text-yellow-400';
+      case 'info': return 'text-blue-600 dark:text-blue-400';
+      case 'debug': return 'text-slate-600 dark:text-slate-400';
+      default: return 'text-slate-600 dark:text-slate-400';
+    }
+  };
+
+  const getLogLevelIcon = (level) => {
+    switch (level) {
+      case 'error': return <AlertTriangle className="w-4 h-4" />;
+      case 'warn': return <AlertTriangle className="w-4 h-4" />;
+      case 'info': return <CheckCircle className="w-4 h-4" />;
+      case 'debug': return <Activity className="w-4 h-4" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  const getHealthStatus = (value, thresholds) => {
+    if (value >= thresholds.critical) return { status: 'critical', color: 'text-red-600 dark:text-red-400' };
+    if (value >= thresholds.warning) return { status: 'warning', color: 'text-yellow-600 dark:text-yellow-400' };
+    return { status: 'healthy', color: 'text-green-600 dark:text-green-400' };
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading monitoring data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">System Monitoring</h1>
-          <p className="text-muted-foreground">
-            Real-time system health and performance monitoring
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">System Monitoring</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-2">Real-time system health and performance metrics</p>
+          </div>
+          <div className="flex items-center gap-3 mt-4 sm:mt-0">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Export Logs
+            </Button>
+            <Button 
+              onClick={fetchMonitoringData}
+              disabled={loading}
+              size="sm" 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Settings className="w-4 h-4" />
+              Settings
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">Export Logs</Button>
-          <Button>Refresh Data</Button>
+
+        {/* System Health Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Uptime</p>
+                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{systemHealth?.uptime || 99.8}%</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">Last 30 days</p>
+                </div>
+                <div className="p-3 bg-green-500 rounded-xl">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Response Time</p>
+                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{systemHealth?.responseTime || 120}ms</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Average</p>
+                </div>
+                <div className="p-3 bg-blue-500 rounded-xl">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Error Rate</p>
+                  <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">{systemHealth?.errorRate || 0.02}%</p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">Last hour</p>
+                </div>
+                <div className="p-3 bg-orange-500 rounded-xl">
+                  <AlertTriangle className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Active Users</p>
+                  <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">1,247</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Currently online</p>
+                </div>
+                <div className="p-3 bg-purple-500 rounded-xl">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* System Health Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Status</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">Operational</div>
-            <p className="text-xs text-muted-foreground">
-              All systems running normally
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">45%</div>
-            <p className="text-xs text-muted-foreground">
-              Within normal range
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
-            <Server className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">67%</div>
-            <p className="text-xs text-muted-foreground">
-              Moderate usage
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disk Usage</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">82%</div>
-            <p className="text-xs text-muted-foreground">
-              High usage - consider cleanup
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Performance Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>System Performance</CardTitle>
-            <CardDescription>Real-time system metrics over the last hour</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={performanceMetrics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="cpu" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                <Area type="monotone" dataKey="memory" stackId="2" stroke="#82ca9d" fill="#82ca9d" />
-                <Area type="monotone" dataKey="disk" stackId="3" stroke="#ffc658" fill="#ffc658" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Error Statistics</CardTitle>
-            <CardDescription>Error counts by type in the last 24 hours</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {errorStats.map((stat, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-sm font-medium">{stat.type}</span>
+        {/* Performance Metrics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100">CPU & Memory Usage</CardTitle>
+              <CardDescription>Real-time resource utilization</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium">CPU Usage</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-bold">{stat.count}</span>
-                    <Badge variant={stat.trend.startsWith('+') ? 'destructive' : 'secondary'}>
-                      {stat.trend}
-                    </Badge>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">{systemHealth?.cpuUsage || 45}%</span>
+                    <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full">
+                      <div 
+                        className="h-2 bg-blue-600 rounded-full" 
+                        style={{ width: `${systemHealth?.cpuUsage || 45}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MemoryStick className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium">Memory Usage</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">{systemHealth?.memoryUsage || 67}%</span>
+                    <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full">
+                      <div 
+                        className="h-2 bg-green-600 rounded-full" 
+                        style={{ width: `${systemHealth?.memoryUsage || 67}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium">Disk Usage</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">{systemHealth?.diskUsage || 23}%</span>
+                    <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full">
+                      <div 
+                        className="h-2 bg-orange-600 rounded-full" 
+                        style={{ width: `${systemHealth?.diskUsage || 23}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100">Network Status</CardTitle>
+              <CardDescription>Connection and bandwidth metrics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Wifi className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium">Connection Status</span>
+                  </div>
+                  <Badge variant="default" className="bg-green-600">Connected</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium">Bandwidth</span>
+                  </div>
+                  <span className="text-sm font-medium">1.2 Gbps</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm font-medium">SSL Status</span>
+                  </div>
+                  <Badge variant="default" className="bg-green-600">Valid</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium">Server Load</span>
+                  </div>
+                  <span className="text-sm font-medium">0.45</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* System Logs */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100">System Logs</CardTitle>
+                <CardDescription>Recent system events and alerts</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  View All
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {logs.map((log) => (
+                <div key={log.id} className="flex items-start gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div className={`flex-shrink-0 ${getLogLevelColor(log.level)}`}>
+                    {getLogLevelIcon(log.level)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-sm font-medium ${getLogLevelColor(log.level)}`}>
+                        {log.level.toUpperCase()}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {log.source}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-900 dark:text-slate-100 mb-1">
+                      {log.message}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {log.timestamp.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -265,102 +370,6 @@ export default function MonitoringPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* System Logs */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>System Logs</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search logs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            <select
-              value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-            >
-              <option value="all">All Levels</option>
-              <option value="error">Error</option>
-              <option value="warn">Warning</option>
-              <option value="info">Info</option>
-              <option value="debug">Debug</option>
-            </select>
-            <select
-              value={filterSource}
-              onChange={(e) => setFilterSource(e.target.value)}
-              className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-            >
-              <option value="all">All Sources</option>
-              <option value="database">Database</option>
-              <option value="system">System</option>
-              <option value="auth">Authentication</option>
-              <option value="api">API</option>
-              <option value="backup">Backup</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            {filteredLogs.map((log) => (
-              <div key={log.id} className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                <div className="flex-shrink-0 mt-1">
-                  {getLevelIcon(log.level)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getLevelColor(log.level)}>
-                        {log.level.toUpperCase()}
-                      </Badge>
-                      <Badge variant="outline">
-                        {log.source}
-                      </Badge>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {log.timestamp}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm font-medium">{log.message}</p>
-                  {log.context && (
-                    <div className="mt-2 p-2 bg-muted rounded text-xs font-mono">
-                      {JSON.stringify(log.context, null, 2)}
-                    </div>
-                  )}
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>Copy Log Entry</DropdownMenuItem>
-                    <DropdownMenuItem>Mark as Resolved</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
